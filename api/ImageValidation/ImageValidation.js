@@ -1,5 +1,5 @@
 const Tesseract = require('tesseract.js');
-const sharp = require('sharp');
+// const sharp = require('sharp');
 
 
 
