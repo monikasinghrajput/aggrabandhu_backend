@@ -4,9 +4,14 @@ const express = require('express');
 const sequelize = require('./config/db');
 const bodyParser = require('body-parser');
 const fileUpload = require('express-fileupload');
+const { exec } = require('child_process');
+const path = require('path');
 dotenv.config();
 
 const app = express();
+
+// Define the port for local development
+const port = process.env.PORT || 9000;
 
 // Importing routes
 const BirthToday = require('./api/todayBirthday/todayBirthRoutes');
@@ -22,6 +27,7 @@ const authRoutes = require('./api/userProfile/auth-routes');
 const DistrictRoute = require('./api/DistrictManagement/DistrictRoute');
 const ValidateIMageRoute = require('./api/ImageValidation/ValidationImage');
 const RoleManagementRoute = require('./api/Rolemanagement/roleManageRoute');
+const mail = require('./config/nodemailer/nodemailer');
 const logger = require('./config/logger');
 const NotificationRoute = require('./api/NotificationManagement/notificationRoute');
 
@@ -31,6 +37,18 @@ app.use(fileUpload());
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Run the cleanup script
+exec('node ./cleanupIndexes.js', (error, stdout, stderr) => {
+  if (error) {
+    console.error(`Error executing cleanup script: ${error}`);
+    return;
+  }
+  console.log(`Cleanup script output: ${stdout}`);
+  if (stderr) {
+    console.error(`Cleanup script stderr: ${stderr}`);
+  }
+});
 
 // Sync database
 sequelize.sync({ alter: true })
@@ -67,15 +85,14 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Something went wrong!' });
 });
 
-
-// Start the server locally for testing
-if (process.env.NODE_ENV !== 'production') {
-  app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
-  });
-}
-
-// Export the handler for AWS Lambda
+// AWS Lambda setup
 const awsServerlessExpress = require('aws-serverless-express');
 const server = awsServerlessExpress.createServer(app);
-exports.handler = (event, context) => awsServerlessExpress.proxy(server, event, context);
+
+exports.handler = (event, context) => {
+  awsServerlessExpress.proxy(server, event, context);
+};
+
+//  local server start code
+app.listen(port, () => {
+   console.log(`Server is running on http://localhost:${port}`); });
