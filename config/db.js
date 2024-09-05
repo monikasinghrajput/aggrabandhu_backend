@@ -1,31 +1,92 @@
-const { Sequelize } = require('sequelize');
-const mysql = require('mysql2');
+const serverless = require('@vendia/serverless-express');
+const express = require('express');
+const cors = require('cors');
 const dotenv = require('dotenv');
+const bodyParser = require('body-parser');
+const fileUpload = require('express-fileupload');
+const { exec } = require('child_process');
+const path = require('path');
+const sequelize = require('./config/db');
 
 // Load environment variables
 dotenv.config();
-const DB_NAME=process.env.DB_NAME || "aggrabandhuss";
-const DB_USER=process.env.DB_USER|| "root";
-const DB_PASSWORD=process.env.DB_PASSWORD||'';
 
-const sequelize = new Sequelize(DB_NAME,DB_USER,DB_PASSWORD, {
-  host: 'localhost',
-  dialect: 'mysql',
-  dialectModule: require('mysql2'),
-  dialectOptions: {
-    // options: {
-    //   encrypt: true,
-    // },
-  },
+const app = express();
+const port = process.env.PORT || 9000;
+
+// Importing routes
+const BirthToday = require('./api/todayBirthday/todayBirthRoutes');
+const Donation_Receives_Route = require('./api/DonationManagement/DonationReceive/Donation_Routes');
+const DonationRoute = require('./api/DonationManagement/Donations/Donation_Routes');
+const GalleryRoute = require('./api/gallery/GalleryRoutes');
+const MemberRoute = require('./api/Members/member-route');
+const StateRoute = require('./api/StateManagement/stateRoute');
+const FileRoute = require('./api/GetFileData/FileRoute');
+const NewsRoute = require('./api/News/newsRoutes');
+const GotraRoute = require('./api/Gotra/GotraRoute');
+const authRoutes = require('./api/userProfile/auth-routes');
+const DistrictRoute = require('./api/DistrictManagement/DistrictRoute');
+const ValidateIMageRoute = require('./api/ImageValidation/ValidationImage');
+const RoleManagementRoute = require('./api/Rolemanagement/roleManageRoute');
+const mail = require('./config/nodemailer/nodemailer');
+const logger = require('./config/logger');
+const NotificationRoute = require('./api/NotificationManagement/notificationRoute');
+
+// Middleware
+app.use(cors());
+app.use(fileUpload());
+app.use(express.json());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// Run the cleanup script
+exec('node ./cleanupIndexes.js', (error, stdout, stderr) => {
+  if (error) {
+    console.error(`Error executing cleanup script: ${error}`);
+    return;
+  }
+  console.log(`Cleanup script output: ${stdout}`);
+  if (stderr) {
+    console.error(`Cleanup script stderr: ${stderr}`);
+  }
 });
 
-// Test the connection
-sequelize.authenticate()
+sequelize.sync({ alter: true })
   .then(() => {
-    console.log('Connection has been established successfully.');
+    console.log('Database synced successfully.');
   })
   .catch(err => {
-    console.error('Unable to connect to the database:', err);
+    console.error('Error syncing database:', err);
+    logger.error('error :', err.message);
   });
 
-module.exports = sequelize; // Export the sequelize instance directly
+// Routes middleware
+app.use('/api/auth', authRoutes);
+app.use('/api/member', MemberRoute);
+app.use('/api/donationreceive', Donation_Receives_Route);
+app.use('/api/district', DistrictRoute);
+app.use('/api/donation', DonationRoute);
+app.use('/api/gallery', GalleryRoute);
+app.use('/api/state', StateRoute);
+app.use('/api/gotra', GotraRoute);
+app.use('/api/news', NewsRoute);
+app.use('/api/file', FileRoute);
+app.use('/api/validate-image', ValidateIMageRoute);
+app.use('/api/role', RoleManagementRoute);
+app.use('/api/birth', BirthToday);
+app.use('/api/notification', NotificationRoute);
+
+app.get('/', (req, res) => {
+  res.send('testing API mona');
+});
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Something went wrong!' });
+});
+
+
+
+// Export the handler for AWS Lambda
+const server = serverless.createServer(app);
+exports.handler = (event, context) => serverless.proxy(server, event, context);
