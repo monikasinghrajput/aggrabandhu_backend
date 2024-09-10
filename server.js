@@ -78,7 +78,7 @@ app.use('/api/notification', NotificationRoute);
 app.use('/api/useradd',authRoutes);
 
 app.get('/', (req, res) => {
-  res.send('API RUNNING.........');
+  res.send('Mona : warning ! never change entire code .........');
 });
 
 app.use((err, req, res, next) => {
