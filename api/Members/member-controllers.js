@@ -1,4 +1,3 @@
-
 const memberModel=require('./member-model');
 const NomineeModel=require('./nominee_model');
 const REST_API = require("../../utils/crudHelper");
@@ -183,9 +182,6 @@ exports.verifyOTP=async(req,resp)=>{
 
 
 
-
-
-
 if (!fs.existsSync(baseUploadsFolder)) {
   fs.mkdirSync(baseUploadsFolder, { recursive: true });
 }
@@ -199,7 +195,7 @@ const test = async (req, resp, id) => {
   
   if (!uploadedFile || !uploadedFile2) {
 
-    console.log(' upload    No file uploaded');
+    console.log(' upload No file uploaded');
     return;
   }
   const newfile=String(id);
