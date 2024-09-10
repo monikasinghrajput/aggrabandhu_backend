@@ -96,7 +96,7 @@ app.use('/api/notification',NotificationRoute); // checking
 
 
 app.get('/', (req, res) => {
-  res.send('testing API ');
+  res.send('please dont change entire code  ');
 });
 
 
@@ -107,18 +107,6 @@ app.use((err, req, res, next) => {
 });
 
 
-
-
-
-// module.exports.handler = serverless(app);
-
-// const awsServerlessExpress=require('aws-serverless-express')
-
-// const server = awsServerlessExpress.createServer(app);
-
-// exports.handler = (event, context) => {
-//   awsServerlessExpress.proxy(server, event, context);
-// };
 
 
 
