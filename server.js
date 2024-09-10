@@ -78,7 +78,7 @@ app.use('/api/notification', NotificationRoute);
 app.use('/api/useradd',authRoutes);
 
 app.get('/', (req, res) => {
-  res.send('Mona : warning ! never change entire code .........');
+  res.send('Mona : warning ! never change entire code ..........');
 });
 
 app.use((err, req, res, next) => {
@@ -97,4 +97,3 @@ exports.handler = (event, context) => {
 //  local server start code
 app.listen(port, () => {
    console.log(`Server is running on http://localhost:${port}`); });
-
