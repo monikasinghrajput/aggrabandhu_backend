@@ -5,8 +5,6 @@ const RoleModel=require('../member-model');
 const REST_API = require("../../../utils/crudHelper");
 
 
-
-
 exports.login = async (req, res) => {
     try {
       const { email, password } = req.body;
