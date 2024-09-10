@@ -86,25 +86,15 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Something went wrong!' });
 });
 
-// // AWS Lambda setup
-// const awsServerlessExpress = require('aws-serverless-express');
-// const server = awsServerlessExpress.createServer(app);
-
-// exports.handler = (event, context) => {
-//   awsServerlessExpress.proxy(server, event, context);
-// };
-
-// //  local server start code
-// app.listen(port, () => {
-//    console.log(`Server is running on http://localhost:${port}`); });
-
-// Start the server locally for testing
-if (process.env.NODE_ENV !== 'production') {
-  app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
-  });
-}
-
-// Export the handler for AWS Lambda
+// AWS Lambda setup
+const awsServerlessExpress = require('aws-serverless-express');
 const server = awsServerlessExpress.createServer(app);
-exports.handler = (event, context) => awsServerlessExpress.proxy(server, event, context);
+
+exports.handler = (event, context) => {
+  awsServerlessExpress.proxy(server, event, context);
+};
+
+//  local server start code
+app.listen(port, () => {
+   console.log(`Server is running on http://localhost:${port}`); });
+
