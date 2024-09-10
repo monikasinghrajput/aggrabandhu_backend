@@ -378,4 +378,3 @@ const _updateRole = async (req, res, model) => {
     _delete,
     _add,
   };
-  
