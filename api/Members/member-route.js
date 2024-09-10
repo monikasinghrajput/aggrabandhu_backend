@@ -1,6 +1,4 @@
 
-
-
 const memberController=require('./member-controllers');
 const LoginMemberController=require('./MemberShipLogin/membershipController');
 const express = require('express');

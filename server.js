@@ -5,31 +5,9 @@ const sequelize = require('./config/db');
 const bodyParser = require('body-parser');
 const fileUpload = require('express-fileupload');
 const { exec } = require('child_process');
-const path = require('path');
 dotenv.config();
 
 const app = express();
-
-// Define the port for local development
-const port = process.env.PORT || 9000;
-
-// Importing routes
-const BirthToday = require('./api/todayBirthday/todayBirthRoutes');
-const Donation_Receives_Route = require('./api/DonationManagement/DonationReceive/Donation_Routes');
-const DonationRoute = require('./api/DonationManagement/Donations/Donation_Routes');
-const GalleryRoute = require('./api/gallery/GalleryRoutes');
-const MemberRoute = require('./api/Members/member-route');
-const StateRoute = require('./api/StateManagement/stateRoute');
-const FileRoute = require('./api/GetFileData/FileRoute');
-const NewsRoute = require('./api/News/newsRoutes');
-const GotraRoute = require('./api/Gotra/GotraRoute');
-const authRoutes = require('./api/userProfile/auth-routes');
-const DistrictRoute = require('./api/DistrictManagement/DistrictRoute');
-const ValidateIMageRoute = require('./api/ImageValidation/ValidationImage');
-const RoleManagementRoute = require('./api/Rolemanagement/roleManageRoute');
-const mail = require('./config/nodemailer/nodemailer');
-const logger = require('./config/logger');
-const NotificationRoute = require('./api/NotificationManagement/notificationRoute');
 
 // Middleware
 app.use(cors());
@@ -57,25 +35,30 @@ sequelize.sync({ alter: true })
   })
   .catch(err => {
     console.error('Error syncing database:', err);
-    logger.error('error :', err.message);
   });
 
-// Routes middleware
-app.use('/api/auth', authRoutes);
-app.use('/api/member', MemberRoute);
-app.use('/api/donationreceive', Donation_Receives_Route);
-app.use('/api/district', DistrictRoute);
-app.use('/api/donation', DonationRoute);
-app.use('/api/gallery', GalleryRoute);
-app.use('/api/state', StateRoute);
-app.use('/api/gotra', GotraRoute);
-app.use('/api/news', NewsRoute);
-app.use('/api/file', FileRoute);
-app.use('/api/validate-image', ValidateIMageRoute);
-app.use('/api/role', RoleManagementRoute);
-app.use('/api/birth', BirthToday);
-app.use('/api/notification', NotificationRoute);
-app.use('/api/useradd',authRoutes);
+// Importing routes
+const routes = {
+  '/api/auth': require('./api/userProfile/auth-routes'),
+  '/api/member': require('./api/Members/member-route'),
+  '/api/donationreceive': require('./api/DonationManagement/DonationReceive/Donation_Routes'),
+  '/api/district': require('./api/DistrictManagement/DistrictRoute'),
+  '/api/donation': require('./api/DonationManagement/Donations/Donation_Routes'),
+  '/api/gallery': require('./api/gallery/GalleryRoutes'),
+  '/api/state': require('./api/StateManagement/stateRoute'),
+  '/api/gotra': require('./api/Gotra/GotraRoute'),
+  '/api/news': require('./api/News/newsRoutes'),
+  '/api/file': require('./api/GetFileData/FileRoute'),
+  '/api/validate-image': require('./api/ImageValidation/ValidationImage'),
+  '/api/role': require('./api/Rolemanagement/roleManageRoute'),
+  '/api/birth': require('./api/todayBirthday/todayBirthRoutes'),
+  '/api/notification': require('./api/NotificationManagement/notificationRoute'),
+  '/api/useradd': require('./api/userProfile/auth-routes'),
+};
+
+for (const [path, route] of Object.entries(routes)) {
+  app.use(path, route);
+}
 
 app.get('/', (req, res) => {
   res.send('Mona : warning ! never change entire code ..........');
@@ -93,7 +76,3 @@ const server = awsServerlessExpress.createServer(app);
 exports.handler = (event, context) => {
   awsServerlessExpress.proxy(server, event, context);
 };
-
-//  local server start code
-app.listen(port, () => {
-   console.log(`Server is running on http://localhost:${port}`); });
